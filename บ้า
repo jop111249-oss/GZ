@@ -1,0 +1,320 @@
+--// คนบ้าสร้างสคริป
+--// LocalScript
+--// ฟังก์ชัน:
+--// 1. วิ่งไว ปรับ 1-1000
+--// 2. กระโดดสูง
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local Player = Players.LocalPlayer
+
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "คนบ้าสร้างสคริป"
+GUI.ResetOnSpawn = false
+GUI.Parent = Player:WaitForChild("PlayerGui")
+
+-- Main
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(330, 230)
+Main.Position = UDim2.fromScale(0.5, 0.5)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Main.BorderSizePixel = 0
+Main.Parent = GUI
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 14)
+Corner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Thickness = 2
+Stroke.Color = Color3.fromRGB(80, 80, 100)
+Stroke.Parent = Main
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -20, 0, 45)
+Title.Position = UDim2.fromOffset(10, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "คนบ้าสร้างสคริป"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 20
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Main
+
+-- Speed label
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(1, -30, 0, 30)
+SpeedLabel.Position = UDim2.fromOffset(15, 55)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "ความเร็ว: 16"
+SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+SpeedLabel.TextSize = 15
+SpeedLabel.Font = Enum.Font.GothamMedium
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = Main
+
+-- Speed textbox
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Size = UDim2.fromOffset(180, 38)
+SpeedBox.Position = UDim2.fromOffset(15, 88)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+SpeedBox.BorderSizePixel = 0
+SpeedBox.PlaceholderText = "ใส่ความเร็ว 1-1000"
+SpeedBox.Text = "16"
+SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBox.TextSize = 14
+SpeedBox.Font = Enum.Font.Gotham
+SpeedBox.ClearTextOnFocus = false
+SpeedBox.Parent = Main
+
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 8)
+SpeedCorner.Parent = SpeedBox
+
+-- Apply speed
+local SpeedButton = Instance.new("TextButton")
+SpeedButton.Size = UDim2.fromOffset(100, 38)
+SpeedButton.Position = UDim2.fromOffset(210, 88)
+SpeedButton.BackgroundColor3 = Color3.fromRGB(55, 90, 160)
+SpeedButton.BorderSizePixel = 0
+SpeedButton.Text = "ใช้ความเร็ว"
+SpeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedButton.TextSize = 13
+SpeedButton.Font = Enum.Font.GothamBold
+SpeedButton.Parent = Main
+
+local SpeedButtonCorner = Instance.new("UICorner")
+SpeedButtonCorner.CornerRadius = UDim.new(0, 8)
+SpeedButtonCorner.Parent = SpeedButton
+
+-- Jump
+local JumpButton = Instance.new("TextButton")
+JumpButton.Size = UDim2.new(1, -30, 0, 45)
+JumpButton.Position = UDim2.fromOffset(15, 140)
+JumpButton.BackgroundColor3 = Color3.fromRGB(55, 140, 85)
+JumpButton.BorderSizePixel = 0
+JumpButton.Text = "กระโดดสูง : ปิด"
+JumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+JumpButton.TextSize = 15
+JumpButton.Font = Enum.Font.GothamBold
+JumpButton.Parent = Main
+
+local JumpCorner = Instance.new("UICorner")
+JumpCorner.CornerRadius = UDim.new(0, 9)
+JumpCorner.Parent = JumpButton
+
+-- Status
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1, -30, 0, 28)
+Status.Position = UDim2.fromOffset(15, 195)
+Status.BackgroundTransparency = 1
+Status.Text = "พร้อมใช้งาน"
+Status.TextColor3 = Color3.fromRGB(150, 220, 170)
+Status.TextSize = 13
+Status.Font = Enum.Font.GothamMedium
+Status.Parent = Main
+
+--------------------------------------------------
+-- CHARACTER
+--------------------------------------------------
+
+local SpeedValue = 16
+local HighJump = false
+
+local function GetHumanoid()
+	local Character = Player.Character
+	if not Character then
+		return nil
+	end
+
+	return Character:FindFirstChildOfClass("Humanoid")
+end
+
+local function ApplySettings()
+	local Humanoid = GetHumanoid()
+
+	if not Humanoid then
+		return
+	end
+
+	Humanoid.WalkSpeed = SpeedValue
+
+	if HighJump then
+		Humanoid.UseJumpPower = true
+		Humanoid.JumpPower = 100
+	else
+		Humanoid.UseJumpPower = true
+		Humanoid.JumpPower = 50
+	end
+end
+
+--------------------------------------------------
+-- SPEED
+--------------------------------------------------
+
+SpeedButton.MouseButton1Click:Connect(function()
+
+	local Number = tonumber(SpeedBox.Text)
+
+	if not Number then
+		Status.Text = "กรุณาใส่ตัวเลข"
+		Status.TextColor3 = Color3.fromRGB(255, 130, 130)
+		return
+	end
+
+	Number = math.clamp(Number, 1, 1000)
+
+	SpeedValue = Number
+	SpeedBox.Text = tostring(Number)
+	SpeedLabel.Text = "ความเร็ว: " .. Number
+
+	ApplySettings()
+
+	Status.Text = "ตั้งความเร็วเป็น " .. Number
+	Status.TextColor3 = Color3.fromRGB(150, 220, 170)
+end)
+
+--------------------------------------------------
+-- HIGH JUMP
+--------------------------------------------------
+
+JumpButton.MouseButton1Click:Connect(function()
+
+	HighJump = not HighJump
+
+	ApplySettings()
+
+	if HighJump then
+		JumpButton.Text = "กระโดดสูง : เปิด"
+		JumpButton.BackgroundColor3 = Color3.fromRGB(70, 180, 105)
+		Status.Text = "เปิดกระโดดสูงแล้ว"
+	else
+		JumpButton.Text = "กระโดดสูง : ปิด"
+		JumpButton.BackgroundColor3 = Color3.fromRGB(55, 140, 85)
+		Status.Text = "ปิดกระโดดสูงแล้ว"
+	end
+end)
+
+--------------------------------------------------
+-- RESPAWN
+--------------------------------------------------
+
+Player.CharacterAdded:Connect(function(Character)
+
+	local Humanoid = Character:WaitForChild("Humanoid")
+
+	task.wait(0.2)
+
+	Humanoid.WalkSpeed = SpeedValue
+
+	Humanoid.UseJumpPower = true
+
+	if HighJump then
+		Humanoid.JumpPower = 100
+	else
+		Humanoid.JumpPower = 50
+	end
+end)
+
+--------------------------------------------------
+-- DRAG GUI
+--------------------------------------------------
+
+local dragging = false
+local dragStart
+local startPosition
+
+Title.InputBegan:Connect(function(Input)
+
+	if Input.UserInputType == Enum.UserInputType.MouseButton1
+		or Input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = Input.Position
+		startPosition = Main.Position
+	end
+end)
+
+Title.InputChanged:Connect(function(Input)
+
+	if Input.UserInputType == Enum.UserInputType.MouseMovement
+		or Input.UserInputType == Enum.UserInputType.Touch then
+
+		Input.Changed:Connect(function()
+
+			if Input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(Input)
+
+	if not dragging then
+		return
+	end
+
+	if Input.UserInputType ~= Enum.UserInputType.MouseMovement
+		and Input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
+
+	local Delta = Input.Position - dragStart
+
+	Main.Position = UDim2.new(
+		startPosition.X.Scale,
+		startPosition.X.Offset + Delta.X,
+		startPosition.Y.Scale,
+		startPosition.Y.Offset + Delta.Y
+	)
+end)
+
+--------------------------------------------------
+-- HOVER ANIMATION
+--------------------------------------------------
+
+local function Hover(Button, Normal, HoverColor)
+
+	Button.MouseEnter:Connect(function()
+		TweenService:Create(
+			Button,
+			TweenInfo.new(0.15),
+			{
+				BackgroundColor3 = HoverColor
+			}
+		):Play()
+	end)
+
+	Button.MouseLeave:Connect(function()
+		TweenService:Create(
+			Button,
+			TweenInfo.new(0.15),
+			{
+				BackgroundColor3 = Normal
+			}
+		):Play()
+	end)
+end
+
+Hover(
+	SpeedButton,
+	Color3.fromRGB(55, 90, 160),
+	Color3.fromRGB(70, 110, 190)
+)
+
+Hover(
+	JumpButton,
+	Color3.fromRGB(55, 140, 85),
+	Color3.fromRGB(70, 170, 100)
+)
+
+--------------------------------------------------
+-- START
+--------------------------------------------------
+
+ApplySettings()
+
+print("คนบ้าสร้างสคริป : Loaded")
